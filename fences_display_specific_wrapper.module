@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * @file
+ * ...
+ */
+
+/**
+ * Implements hook_field_formatter_info_alter().
+ */
+function fences_display_specific_wrapper_field_formatter_info_alter(&$info) {
+  foreach ($info as &$formatter) {
+    $formatter['settings']['fences_display_specific_wrapper'] = '';
+  }
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary_alter().
+ */
+function fences_display_specific_wrapper_field_formatter_settings_summary_alter(&$summary, $context) {
+  $display = $context['instance']['display'][$context['view_mode']];
+  $settings = $display['settings'];
+
+  if (!empty($summary)) {
+    $summary .= '<br />';
+  }
+
+  if (!empty($settings['fences_display_specific_wrapper'])) {
+    $summary .= t('Wrapper markup: @wrapper', array('@wrapper' => filter_xss($settings['fences_display_specific_wrapper'], array())));
+  }
+  else {
+    $summary .= t('Wrapper markup not modified');
+  }
+}
+
+/**
+ * Implements hook_field_formatter_settings_form_alter().
+ */
+function fences_display_specific_wrapper_field_formatter_settings_form_alter(&$settings_form, $context) {
+  $display = $context['instance']['display'][$context['view_mode']];
+  $settings = $display['settings'];
+
+  $settings_form['fences_display_specific_wrapper'] = array(
+    '#type' => 'select',
+    '#title' => t('Wrapper markup'),
+    '#options' => fences_get_fences_options('field'),
+    '#default_value' => $settings['fences_display_specific_wrapper'],
+  );
+}
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function fences_display_specific_wrapper_preprocess_field(&$vars, $hook) {
+  $entity_type = $vars['element']['#entity_type'];
+  $field_name  = $vars['element']['#field_name'];
+  $bundle      = $vars['element']['#bundle'];
+  $view_mode   = $vars['element']['#view_mode'];
+
+  $formatter_info = field_formatter_settings_get_instance_display_settings($entity_type, $field_name, $bundle, $view_mode);
+
+  // Add fences theme hook suggestion
+  if (isset($formatter_info['fences_display_specific_wrapper']) && !empty($formatter_info['fences_display_specific_wrapper'])) {
+    // Remove global fences theme hook suggestion
+    foreach ($vars['theme_hook_suggestions'] as $k => $suggestion) {
+      if (strpos($suggestion, 'fences') !== FALSE) {
+        unset($vars['theme_hook_suggestions'][$k]);
+      }
+    }
+
+    // Make fences' suggestions low priority by placing them at the front of the queue.
+    $suggestion = 'field__fences_' . $formatter_info['fences_display_specific_wrapper'];
+    if (count($vars['items']) > 1) {
+      // Add a "-multiple" suggestion if there are more than one field items.
+      array_unshift($vars['theme_hook_suggestions'], $suggestion . '_multiple');
+    }
+    array_unshift($vars['theme_hook_suggestions'], $suggestion);
+  }
+}
