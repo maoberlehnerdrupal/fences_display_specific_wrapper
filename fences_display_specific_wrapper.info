@@ -1,5 +1,5 @@
 name = Fences display specific wrapper
-description = Configure fences field wrappers on the display level
+description = Configure fences field wrappers on the display level.
 core = 7.x
 package = Fields
 
