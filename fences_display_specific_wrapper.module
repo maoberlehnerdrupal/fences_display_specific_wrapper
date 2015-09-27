@@ -1,8 +1,7 @@
 <?php
-
 /**
  * @file
- * Configure fences field wrappers on the display level
+ * Configure fences field wrappers on the display level.
  */
 
 /**
@@ -60,16 +59,17 @@ function fences_display_specific_wrapper_preprocess_field(&$vars, $hook) {
 
   $formatter_info = field_formatter_settings_get_instance_display_settings($entity_type, $field_name, $bundle, $view_mode);
 
-  // Add fences theme hook suggestion
+  // Add fences theme hook suggestion.
   if (isset($formatter_info['fences_display_specific_wrapper']) && !empty($formatter_info['fences_display_specific_wrapper'])) {
-    // Remove global fences theme hook suggestion
+    // Remove global fences theme hook suggestion.
     foreach ($vars['theme_hook_suggestions'] as $k => $suggestion) {
       if (strpos($suggestion, 'fences') !== FALSE) {
         unset($vars['theme_hook_suggestions'][$k]);
       }
     }
 
-    // Make fences' suggestions low priority by placing them at the front of the queue.
+    // Make fences' suggestions low priority
+    // by placing them at the front of the queue.
     $suggestion = 'field__fences_' . $formatter_info['fences_display_specific_wrapper'];
     if (count($vars['items']) > 1) {
       // Add a "-multiple" suggestion if there are more than one field items.
